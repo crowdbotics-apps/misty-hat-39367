@@ -1,5 +1,6 @@
 import { StyleSheet, Dimensions } from "react-native";
 const deviceWidth = Dimensions.get("window").width;
+
 const styles = StyleSheet.create({
   headerContainer: {
     height: 150,
@@ -104,6 +105,7 @@ const styles = StyleSheet.create({
     elevation: 5
   }
 });
+
 export const localOptions = {
   stripeSecretKey: "your stripe secret key here  e.g. sk_test_xxxx",
   merchantName: "Example Inc.",
@@ -115,6 +117,7 @@ export const localOptions = {
   stripeTestEnv: true,
   stripePublishKey: "your stripe publish key here e.g. pk_test_xxxx"
 };
+
 export default {
   title: "App Menu2",
   copy: "Routes available2",
