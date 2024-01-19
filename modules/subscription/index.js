@@ -1,4 +1,3 @@
-import { StyleSheet } from "react-native";
 import React, { useEffect, useState, useContext, useRef } from "react";
 import { Text, View, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import { OptionsContext } from "@options";
@@ -7,19 +6,10 @@ import { fetchPlans, fetchPaymentSheetParams, cancelPlan } from "./api";
 
 const Subscription = () => {
   const options = useContext(OptionsContext);
-  const {
-    styles,
-    localOptions
-  } = options;
+  const { styles, localOptions } = options;
   const clientSecret = global.stripeSecretKey;
-  const {
-    stripePublishKey,
-    merchantIdentifier
-  } = localOptions;
-  const {
-    initPaymentSheet,
-    presentPaymentSheet
-  } = useStripe();
+  const { stripePublishKey, merchantIdentifier } = localOptions;
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState("");
   const [preSelectedPlan, setPreSelectedPlan] = useState("");
@@ -29,15 +19,12 @@ const Subscription = () => {
   const [subscribeBtn, setSubscribeBtn] = useState({
     isActive: false,
     text: ""
-  }); // More info on all the options is below in the API Reference... just some common use cases shown here
+  });
 
+  // More info on all the options is below in the API Reference... just some common use cases shown here
   const subscribe = async () => {
     setLoading(true);
-    const {
-      paymentIntent,
-      ephemeralKey,
-      customer
-    } = await fetchPaymentSheetParams(selectedPlan);
+    const { paymentIntent, ephemeralKey, customer } = await fetchPaymentSheetParams(selectedPlan);
     await initPaymentSheet({
       customerId: customer,
       customerEphemeralKeySecret: ephemeralKey,
@@ -45,11 +32,9 @@ const Subscription = () => {
       merchantDisplayName: "SHahraiz",
       merchantCountryCode: "US",
       testEnv: __DEV__ // use test environment
+    });
 
-    });
-    await presentPaymentSheet({
-      clientSecret
-    });
+    await presentPaymentSheet({ clientSecret });
     setLoading(false);
     setTimeout(() => {
       setPreSelectedPlan(null);
@@ -58,37 +43,30 @@ const Subscription = () => {
   };
 
   const refreshPlans = async () => {
-    fetchPlans().then(response => response.json()).then(json => {
-      const {
-        result
-      } = json;
-      setPlans(result);
-      result.forEach((obj, i) => {
-        if (obj.is_subscribed) {
-          setSelectedPlan(obj.price_id);
-          setPreSelectedPlan(obj.price_id);
-          planSelected(obj);
-          setTimeout(() => {
-            flatListRef.current.scrollToIndex({
-              animated: true,
-              index: i,
-              viewPosition: 0.5
-            });
-          }, 200);
-        }
+    fetchPlans().then(response => response.json())
+      .then((json) => {
+        const { result } = json;
+        setPlans(result);
+        result.forEach((obj, i) => {
+          if (obj.is_subscribed) {
+            setSelectedPlan(obj.price_id);
+            setPreSelectedPlan(obj.price_id);
+            planSelected(obj);
+            setTimeout(() => {
+              flatListRef.current.scrollToIndex({ animated: true, index: i, viewPosition: 0.5 });
+            }, 200);
+          }
+        });
       });
-    });
   };
-
   useEffect(async () => {
     await refreshPlans();
   }, [preSelectedPlan]);
 
-  const planSelected = item => {
+  const planSelected = (item) => {
     setSelectedPlan(item.price_id);
     let text = subscribeBtn.text;
     let isActive = subscribeBtn.isActive;
-
     if (item.price_id === preSelectedPlan) {
       text = "Already Subscribed";
       isActive = false;
@@ -101,11 +79,7 @@ const Subscription = () => {
 
       isActive = true;
     }
-
-    setSubscribeBtn({
-      isActive,
-      text
-    });
+    setSubscribeBtn({ isActive, text });
   };
 
   const cancelSub = async () => {
@@ -117,77 +91,54 @@ const Subscription = () => {
     }, 2000);
     setCancelLoading(false);
   };
-
-  const renderItem = ({
-    item
-  }) => {
+  const renderItem = ({ item }) => {
     if (!item) return;
-    return <TouchableOpacity style={[styles.listItemContainer, selectedPlan === item.price_id && styles.selected, _styles.DtGmFnSd]} onPress={() => {
-      planSelected(item);
-    }}>
-            {preSelectedPlan === item.price_id && <View style={styles.selectedPlanTag}><Text style={_styles.AqouCKKe}>Current Plan</Text></View>}
-            <Text style={_styles.cUSDeRWk}>{item.name}</Text>
+    return (
+        <TouchableOpacity style={[styles.listItemContainer, selectedPlan === item.price_id && styles.selected, { justifyContent: "space-between" }]}
+            onPress={() => { planSelected(item); }}>
+            {preSelectedPlan === item.price_id && <View style={styles.selectedPlanTag}><Text style={{ color: "white" }}>Current Plan</Text></View>}
+            <Text style={{ fontSize: 24, fontWeight: "600" }}>{item.name}</Text>
             <Text>{item.description}</Text>
             <Text><Text style={styles.bold}>Price ID:</Text> {item.price_id}</Text>
-            <Text style={_styles.iByNRvwm}>${item.price}/{item.interval}</Text>
-        </TouchableOpacity>;
+            <Text style={{ fontSize: 24, fontWeight: "600", alignSelf: "flex-end", alignContent: "flex-end" }}>${item.price}/{item.interval}</Text>
+        </TouchableOpacity>
+    );
   };
 
-  return <View>
-        <StripeProvider publishableKey={stripePublishKey} merchantIdentifier={merchantIdentifier}>
+  return (
+      <View>
+        <StripeProvider
+          publishableKey={stripePublishKey}
+          merchantIdentifier={merchantIdentifier}
+        >
           <View style={styles.headerContainer}>
-              <Text style={_styles.BckNpsMM}>Choose a</Text>
-              <Text style={_styles.UFyCuDfw}>Subscription</Text>
-              <Text style={_styles.nweCyWsX}>Plan</Text>
+              <Text style={{ fontSize: 20 }}>Choose a</Text>
+              <Text style={{ fontSize: 54 }}>Subscription</Text>
+              <Text style={{ fontSize: 20 }}>Plan</Text>
           </View>
-          <FlatList horizontal={true} data={plans} renderItem={renderItem} keyExtractor={item => item.id} style={_styles.LsgcFLgC} extraData={plans} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} ref={flatListRef} />
-        {subscribeBtn.isActive && <TouchableOpacity onPress={() => {
-        subscribeBtn.isActive && subscribe();
-      }} style={[styles.button]}>
+          <FlatList
+            horizontal={true}
+            data={plans}
+            renderItem={renderItem}
+            keyExtractor={item => item.id}
+            style={{ }}
+            extraData={plans}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            ref={flatListRef}
+        />
+        {subscribeBtn.isActive && <TouchableOpacity onPress={() => { subscribeBtn.isActive && subscribe(); }} style={[styles.button]}>
             {loading ? <ActivityIndicator></ActivityIndicator> : <Text style={styles.buttonText}>{subscribeBtn.text}</Text>}
         </TouchableOpacity>}
-        {preSelectedPlan !== "" && <TouchableOpacity onPress={() => {
-        cancelSub();
-      }} style={[styles.button, _styles.TgczfgpV]}>
+        {preSelectedPlan !== "" && <TouchableOpacity onPress={() => { cancelSub(); }} style={[styles.button, { backgroundColor: "#DF202C" }]}>
           {cancelLoading ? <ActivityIndicator></ActivityIndicator> : <Text style={styles.buttonText}>Cancel Subscription</Text>}
         </TouchableOpacity>}
         </StripeProvider>
-      </View>;
+      </View>
+  );
 };
 
 export default {
   title: "Subscription",
   navigator: Subscription
 };
-
-const _styles = StyleSheet.create({
-  DtGmFnSd: {
-    justifyContent: "space-between"
-  },
-  AqouCKKe: {
-    color: "white"
-  },
-  cUSDeRWk: {
-    fontSize: 24,
-    fontWeight: "600"
-  },
-  iByNRvwm: {
-    fontSize: 24,
-    fontWeight: "600",
-    alignSelf: "flex-end",
-    alignContent: "flex-end"
-  },
-  BckNpsMM: {
-    fontSize: 20
-  },
-  UFyCuDfw: {
-    fontSize: 54
-  },
-  nweCyWsX: {
-    fontSize: 20
-  },
-  LsgcFLgC: {},
-  TgczfgpV: {
-    backgroundColor: "#DF202C"
-  }
-});
